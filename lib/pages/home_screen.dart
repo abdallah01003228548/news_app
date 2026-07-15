@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:news_app/data/api.dart';
+import 'package:news_app/data/api/api.dart';
+import 'package:news_app/data/models/news_model.dart';
 import 'package:news_app/widget/image_item.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -26,10 +27,10 @@ class _HomeScreenState extends State<HomeScreen> {
         title: Text('News App', style: Theme.of(context).textTheme.bodyLarge),
         centerTitle: true,
       ),
-      body: FutureBuilder(
+      body: FutureBuilder<NewsModel>(
         future: Api.getData(),
         builder: (context, snapshot) {
-          List <dynamic> data=snapshot.data?["articles"]??[];
+          List <Article> articles=snapshot.data?.articles??[];
 
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
@@ -52,16 +53,12 @@ class _HomeScreenState extends State<HomeScreen> {
           return ListView.builder(
             itemBuilder: (context, index) {
               return ImageItemWidget(
-                image: data[index]['urlToImage'] == null
-                    ? dummyImage
-                    : data[index]['urlToImage'],
-                title: data[index]['title'] == null
-                    ? ""
-                    : data[index]['title'],
+                image: articles[index].urlToImage ?? dummyImage,
+                title: articles[index].title ?? "",
                 onTap: () {},
               );
             },
-            itemCount: data.length,
+            itemCount: articles.length,
           );
         },
       ),
