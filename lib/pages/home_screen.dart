@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:news_app/data/api.dart';
 import 'package:news_app/widget/image_item.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -10,6 +11,12 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  Map<String, dynamic> data = {
+    "status": "ok",
+    "totalResults": 10167,
+    "articles": [],
+  };
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -19,15 +26,44 @@ class _HomeScreenState extends State<HomeScreen> {
         title: Text('News App', style: Theme.of(context).textTheme.bodyLarge),
         centerTitle: true,
       ),
-      body: ListView.builder(
-        itemBuilder: (context, index) {
-          return ImageItemWidget(
-            image: dummyImage,
-            title: "Dynamic Title $index",
-            onTap: () {},
+      body: FutureBuilder(
+        future: Api.getData(),
+        builder: (context, snapshot) {
+          List <dynamic> data=snapshot.data?["articles"]??[];
+
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError) {
+            return Center(
+              child: Container(
+                width: 100,
+                height: 100,
+                color: Colors.red,
+                child: Text(
+                  "is error",
+                  textAlign:TextAlign.center ,
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+                ),
+              ),
+            );
+          }
+
+          return ListView.builder(
+            itemBuilder: (context, index) {
+              return ImageItemWidget(
+                image: data[index]['urlToImage'] == null
+                    ? dummyImage
+                    : data[index]['urlToImage'],
+                title: data[index]['title'] == null
+                    ? ""
+                    : data[index]['title'],
+                onTap: () {},
+              );
+            },
+            itemCount: data.length,
           );
         },
-        itemCount: 30,
       ),
     );
   }
